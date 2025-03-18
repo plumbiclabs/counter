@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>语音功能调用测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        textarea {
+            width: 100%;
+            font-family: monospace;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #result {
+            background-color: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <h1>测试 /api/voice-function-call 接口</h1>
+    <form id="testForm">
+        <div class="form-group">
+            <label for="audio">音频文件:</label>
+            <input type="file" id="audio" name="audio" accept="audio/*">
+        </div>
+        <div class="form-group">
+            <label for="tools">工具函数列表 (JSON):</label>
+            <textarea id="tools" name="tools" rows="10">[
+  {
+    "name": "weather",
+    "description": "获取天气信息",
+    "parameters": {
+      "location": "城市名称"
+    }
+  },
+  {
+    "name": "calendar",
+    "description": "查看日历事件",
+    "parameters": {
+      "date": "日期"
+    }
+  }
+]</textarea>
+        </div>
+        <button type="button" onclick="sendRequest()">发送请求</button>
+    </form>
+    <div>
+        <h2>响应结果:</h2>
+        <pre id="result">结果将显示在这里...</pre>
+    </div>
+
+    <script>
+        function sendRequest() {
+            const formData = new FormData();
+            const audioFile = document.getElementById('audio').files[0];
+            const tools = document.getElementById('tools').value;
+            
+            if (!audioFile) {
+                document.getElementById('result').textContent = '错误: 请选择一个音频文件';
+                return;
+            }
+            
+            formData.append('audio', audioFile);
+            formData.append('tools', tools);
+            
+            // 显示正在处理的消息
+            document.getElementById('result').textContent = '正在处理请求...';
+            
+            fetch('http://localhost:3000/api/voice-function-call', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('HTTP错误，状态码: ' + response.status);
+                }
+                return response.json();
+            })
+            .then(data => {
+                document.getElementById('result').textContent = JSON.stringify(data, null, 2);
+            })
+            .catch(error => {
+                document.getElementById('result').textContent = '错误: ' + error;
+            });
+        }
+    </script>
+</body>
+</html> 
